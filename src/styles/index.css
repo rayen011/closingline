@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 96%; /* cream #F8F6F1 */
+    --foreground: 0 0% 10%; /* ink #1A1A1A */
+    --card: 0 0% 100%;
+    --muted: 40 20% 92%;
+    --muted-foreground: 215 16% 40%;
+    --border: 40 14% 87%;
+    --ring: 41 56% 54%; /* brass */
+  }
+
+  .dark {
+    --background: 216 47% 11%; /* navy 800 */
+    --foreground: 40 33% 96%;
+    --card: 216 43% 14%;
+    --muted: 216 30% 20%;
+    --muted-foreground: 215 18% 70%;
+    --border: 216 25% 24%;
+    --ring: 41 56% 54%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  /* Brand selection + focus polish */
+  ::selection {
+    @apply bg-brass/30 text-navy;
+  }
+}
+
+@layer components {
+  .skeleton {
+    @apply relative overflow-hidden rounded-md bg-muted;
+  }
+  .skeleton::after {
+    @apply absolute inset-0 -translate-x-full;
+    content: "";
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.45),
+      transparent
+    );
+    animation: shimmer 1.6s infinite;
+  }
+}
