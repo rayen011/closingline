@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
   } catch {
     return json({ error: "invalid_json" }, 400);
   }
-  const { templateId, customTemplateId, category, inputValues = {}, tone } =
+  const { templateId, customTemplateId, category, inputValues = {}, tone, language } =
     payload ?? {};
 
   // ── Global daily circuit breaker — caps total spend no matter what ────────
@@ -142,6 +142,9 @@ Deno.serve(async (req) => {
     profile?.brokerage_name ? `Brokerage: ${profile.brokerage_name}.` : "",
     profile?.specialty ? `Specialty: ${profile.specialty}.` : "",
     tone ? `Tone: ${String(tone).slice(0, 40)}.` : "",
+    language && String(language).toLowerCase() !== "english"
+      ? `Write the entire email in ${String(language).slice(0, 20)}.`
+      : "",
     profile?.signature_block
       ? `End with this exact signature block:\n${profile.signature_block}`
       : "",

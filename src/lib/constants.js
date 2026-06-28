@@ -43,6 +43,14 @@ export const TONES = [
   { key: "formal", label: "Formal" },
 ];
 
+// ── Languages (generator) ───────────────────────────────────────────────────
+export const LANGUAGES = [
+  { key: "english", label: "English" },
+  { key: "french", label: "French" },
+  { key: "arabic", label: "Arabic" },
+  { key: "spanish", label: "Spanish" },
+];
+
 // ── Plan / billing ──────────────────────────────────────────────────────────
 export const PLAN = {
   price: 29,

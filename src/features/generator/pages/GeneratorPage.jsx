@@ -25,7 +25,7 @@ import { useResolvedTemplate } from "@/hooks/useTemplates";
 import { useCreateCustomTemplate } from "@/hooks/useCustomTemplates";
 import { generateEmail, generationErrorMessage } from "@/features/generator/api";
 import { copyToClipboard } from "@/lib/utils";
-import { TONES, ROUTES } from "@/lib/constants";
+import { TONES, LANGUAGES, ROUTES } from "@/lib/constants";
 
 export default function GeneratorPage() {
   const { templateId } = useParams();
@@ -48,6 +48,7 @@ export default function GeneratorPage() {
   const { register, handleSubmit, getValues, formState: { errors } } = useForm({
     defaultValues: {
       tone: TONES[0].key,
+      language: LANGUAGES[0].key,
       ...(location.state?.inputValues ?? {}),
     },
   });
@@ -81,6 +82,7 @@ export default function GeneratorPage() {
       category: template.category,
       inputValues,
       tone: values.tone,
+      language: values.language,
     });
   };
 
@@ -156,15 +158,27 @@ export default function GeneratorPage() {
                 </div>
               ))}
 
-              <div>
-                <Label htmlFor="tone">Tone</Label>
-                <Select id="tone" {...register("tone")}>
-                  {TONES.map((t) => (
-                    <option key={t.key} value={t.key}>
-                      {t.label}
-                    </option>
-                  ))}
-                </Select>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="tone">Tone</Label>
+                  <Select id="tone" {...register("tone")}>
+                    {TONES.map((t) => (
+                      <option key={t.key} value={t.key}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="language">Language</Label>
+                  <Select id="language" {...register("language")}>
+                    {LANGUAGES.map((l) => (
+                      <option key={l.key} value={l.key}>
+                        {l.label}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
               </div>
 
               <Button
@@ -237,7 +251,10 @@ export default function GeneratorPage() {
                 <div className="skeleton h-4 w-2/3" />
               </div>
             ) : preview ? (
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+              <p
+                dir="auto"
+                className="whitespace-pre-wrap text-sm leading-relaxed text-foreground"
+              >
                 {preview}
               </p>
             ) : (
