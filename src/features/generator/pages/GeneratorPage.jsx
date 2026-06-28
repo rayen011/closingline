@@ -24,6 +24,7 @@ import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useResolvedTemplate } from "@/hooks/useTemplates";
 import { useCreateCustomTemplate } from "@/hooks/useCustomTemplates";
 import { generateEmail, generationErrorMessage } from "@/features/generator/api";
+import { SendMenu } from "@/features/generator/components/SendMenu";
 import { copyToClipboard } from "@/lib/utils";
 import { TONES, LANGUAGES, ROUTES } from "@/lib/constants";
 
@@ -199,6 +200,7 @@ export default function GeneratorPage() {
             <span className="text-sm font-semibold">Preview</span>
             {preview && (
               <div className="flex items-center gap-1">
+                <SendMenu text={preview} />
                 <Button variant="ghost" size="sm" onClick={handleCopy} className="gap-1.5">
                   {copied ? <Check className="h-4 w-4 text-sage" /> : <Copy className="h-4 w-4" />}
                   {copied ? "Copied" : "Copy"}
