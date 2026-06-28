@@ -48,6 +48,6 @@ export const PLAN = {
   price: 29,
   currency: "USD",
   interval: "month",
-  trialGenerations: 10, // free, no card, lifetime
-  fairUseCap: 1000, // soft cap per billing period (enforced server-side)
+  trialGenerations: 5, // free generations per user during early access
+  fairUseCap: 1000, // soft cap per billing period (Pro — dormant during early access)
 };

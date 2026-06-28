@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "@tanstack/react-query";
 import { User, PenLine, CreditCard, Lock, Check, Crown } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,7 +14,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { useSubscription } from "@/hooks/useSubscription";
-import { startCheckout, openBillingPortal } from "@/features/billing/api";
+import { openBillingPortal } from "@/features/billing/api";
 import { supabase } from "@/lib/supabase";
 import { SPECIALTIES, PLAN } from "@/lib/constants";
 import { cn, formatDate } from "@/lib/utils";
@@ -122,28 +121,8 @@ function SignatureTab({ profile }) {
 
 function BillingTab() {
   const { isPro, subscription, isLoading } = useSubscription();
-  const [params] = useSearchParams();
-  const qc = useQueryClient();
-  const { user } = useAuth();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-
-  const checkoutStatus = params.get("checkout");
-
-  const handleUpgrade = async () => {
-    setBusy(true);
-    setError("");
-    try {
-      await startCheckout();
-    } catch (err) {
-      setError(
-        err.detail
-          ? `${err.code}: ${err.detail}`
-          : "Couldn't start checkout — is stripe-checkout deployed and are its secrets set?",
-      );
-      setBusy(false);
-    }
-  };
 
   const handlePortal = async () => {
     setBusy(true);
@@ -160,71 +139,55 @@ function BillingTab() {
 
   if (isLoading) return <Spinner />;
 
-  return (
-    <div className="space-y-4">
-      {checkoutStatus === "success" && (
-        <div className="rounded-lg bg-sage-light px-4 py-3 text-sm text-sage">
-          Payment received — your Pro plan is activating. It may take a few
-          seconds to reflect.{" "}
-          <button
-            className="font-semibold underline"
-            onClick={() =>
-              qc.invalidateQueries({ queryKey: ["subscription", user?.id] })
-            }
-          >
-            Refresh
-          </button>
+  // Pro is dormant during early access. This branch only shows if an account is
+  // somehow already Pro (kept for when paid plans switch back on).
+  if (isPro) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Current plan</span>
+            <Badge variant="brass">Pro</Badge>
+          </div>
+          {subscription?.current_period_end && (
+            <span className="text-xs text-muted-foreground">
+              Renews {formatDate(subscription.current_period_end)}
+            </span>
+          )}
         </div>
-      )}
-
-      <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Current plan</span>
-          <Badge variant={isPro ? "brass" : "outline"}>
-            {isPro ? "Pro" : "Trial"}
-          </Badge>
-        </div>
-        {isPro && subscription?.current_period_end && (
-          <span className="text-xs text-muted-foreground">
-            Renews {formatDate(subscription.current_period_end)}
-          </span>
+        {error && (
+          <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </div>
         )}
-      </div>
-
-      {error && (
-        <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </div>
-      )}
-
-      {isPro ? (
         <Button variant="outline" onClick={handlePortal} loading={busy}>
           Manage billing
         </Button>
-      ) : (
-        <Card className="border-brass/30">
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Crown className="h-5 w-5 text-brass" />
-              <h3 className="font-semibold">Upgrade to Pro</h3>
-            </div>
-            <p className="mt-2 text-3xl font-extrabold text-navy dark:text-cream">
-              ${PLAN.price}
-              <span className="text-base font-medium text-muted-foreground">
-                /mo
-              </span>
-            </p>
-            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li>Unlimited email generation</li>
-              <li>All templates + your saved templates</li>
-              <li>Full searchable history</li>
-            </ul>
-            <Button className="mt-5 w-full gap-2" onClick={handleUpgrade} loading={busy}>
-              <Crown className="h-4 w-4" /> Upgrade now
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Current plan</span>
+          <Badge variant="sage">Early access — free</Badge>
+        </div>
+      </div>
+      <Card className="border-brass/30">
+        <CardContent>
+          <div className="flex items-center gap-2">
+            <Crown className="h-5 w-5 text-brass" />
+            <h3 className="font-semibold">Pro is coming soon</h3>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            ClosingLine is free while we're in early access — enjoy{" "}
+            {PLAN.trialGenerations} email generations on us. Paid Pro plans with
+            unlimited generation are on the way.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

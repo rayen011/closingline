@@ -10,8 +10,10 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const TRIAL_GENERATIONS = 10;
-const FAIR_USE_CAP = 1000; // per billing period
+const TRIAL_GENERATIONS = 5; // free generations per user (early access)
+const FAIR_USE_CAP = 1000; // per billing period (Pro — dormant during early access)
+const DAILY_GLOBAL_CAP = 150; // safety circuit breaker across ALL users per day
+// ≈ 150 × ~$0.011/email ≈ $1.65/day max (~$50/mo worst case). Raise as you grow.
 const MODEL = "claude-sonnet-4-6";
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 
@@ -41,6 +43,11 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_ANON_KEY")!,
     { global: { headers: { Authorization: authHeader } } },
   );
+  // Service-role client — used ONLY for the global daily count (bypasses RLS).
+  const admin = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
 
   const {
     data: { user },
@@ -56,6 +63,18 @@ Deno.serve(async (req) => {
   }
   const { templateId, customTemplateId, category, inputValues = {}, tone } =
     payload ?? {};
+
+  // ── Global daily circuit breaker — caps total spend no matter what ────────
+  {
+    const since = new Date(Date.now() - 864e5).toISOString();
+    const { count } = await admin
+      .from("generated_emails")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", since);
+    if ((count ?? 0) >= DAILY_GLOBAL_CAP) {
+      return json({ error: "daily_capacity", limit: DAILY_GLOBAL_CAP }, 503);
+    }
+  }
 
   // ── Server-side limit enforcement ─────────────────────────────────────────
   const { data: sub } = await supabase

@@ -220,11 +220,6 @@ export default function GeneratorPage() {
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                 <div>
                   <p>{generationErrorMessage(errorCode)}</p>
-                  {errorCode === "trial_exhausted" && (
-                    <Link to={ROUTES.settings} className="mt-1 inline-block font-semibold underline">
-                      Upgrade to Pro
-                    </Link>
-                  )}
                   {errorDetail && (
                     <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded bg-red-100/60 p-2 text-xs">
                       {errorDetail}

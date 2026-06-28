@@ -37,7 +37,9 @@ export async function generateEmail(payload) {
 export function generationErrorMessage(code) {
   switch (code) {
     case "trial_exhausted":
-      return "You've used all your free generations. Upgrade to Pro for unlimited emails.";
+      return "You've used all your free early-access generations. Thanks for trying ClosingLine!";
+    case "daily_capacity":
+      return "ClosingLine has hit today's free capacity. Please try again tomorrow.";
     case "fair_use_exceeded":
       return "You've hit this period's fair-use limit. Get in touch and we'll lift it.";
     case "template_not_found":
